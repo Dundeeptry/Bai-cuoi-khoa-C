@@ -45,6 +45,12 @@ int kiemTraLoaiSac(const char *loaiSac) {
            strcmp(loaiSac, "SacThuong") == 0;
 }
 
+const char *layTenTrangThai(int trangThai) {
+    if (trangThai == 0) return "Dang trong";
+    if (trangThai == 1) return "Dang sac";
+    return "Dang bao tri";
+}
+
 void themTruSac(struct TramSac danhSach[], int *soLuong) {
     if (*soLuong >= MAX_TRU) {
         printf("Danh sach da day (%d tru)!\n", MAX_TRU);
@@ -138,6 +144,27 @@ void themTruSac(struct TramSac danhSach[], int *soLuong) {
     }
 }
 
+void hienThiDanhSach(const struct TramSac danhSach[], int soLuong) {
+    if (soLuong == 0) {
+        printf("Danh sach tru sac dang trong!\n");
+        return;
+    }
+
+    printf("\n+------------+--------------+-----------------+-----------------+-----------------+\n");
+    printf("| %-10s | %-12s | %-15s | %-15s | %-15s |\n",
+           "Ma Tru", "Loai Sac", "Thoi Gian (p)", "Dien Nang (kWh)", "Trang Thai");
+    printf("+------------+--------------+-----------------+-----------------+-----------------+\n");
+    for (int i = 0; i < soLuong; i++) {
+        printf("| %-10s | %-12s | %-15d | %-15.3f | %-15s |\n",
+               danhSach[i].maTru,
+               danhSach[i].loaiSac,
+               danhSach[i].thoiGianSac,
+               danhSach[i].dienNangDaSac,
+               layTenTrangThai(danhSach[i].trangThai));
+    }
+    printf("+------------+--------------+-----------------+-----------------+-----------------+\n");
+}
+
 void hienThiMenu(void) {
     printf("\n========== QUAN LY TRAM SAC XE DIEN ==========\n");
     printf("1. Them moi tru sac (Create)\n");
@@ -172,12 +199,14 @@ int main(void) {
                 themTruSac(danhSach, &soLuong);
                 break;
             case 2:
+                hienThiDanhSach(danhSach, soLuong);
+                break;
             case 3:
             case 4:
             case 5:
             case 6:
             case 7:
-                printf("Chuc nang dang duoc phat trien.\n");
+                printf("Chuc nang se duoc cap nhat o Tuan 2.\n");
                 break;
             case 0:
                 printf("Da thoat chuong trinh.\n");
