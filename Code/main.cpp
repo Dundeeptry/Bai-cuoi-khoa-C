@@ -51,6 +51,26 @@ const char *layTenTrangThai(int trangThai) {
     return "Dang bao tri";
 }
 
+void inTieuDeBang(void) {
+    printf("\n+------------+--------------+-----------------+-----------------+-----------------+\n");
+    printf("| %-10s | %-12s | %-15s | %-15s | %-15s |\n",
+           "Ma Tru", "Loai Sac", "Thoi Gian (p)", "Dien Nang (kWh)", "Trang Thai");
+    printf("+------------+--------------+-----------------+-----------------+-----------------+\n");
+}
+
+void inDongBang(const struct TramSac *tru) {
+    printf("| %-10s | %-12s | %-15d | %-15.3f | %-15s |\n",
+           tru->maTru,
+           tru->loaiSac,
+           tru->thoiGianSac,
+           tru->dienNangDaSac,
+           layTenTrangThai(tru->trangThai));
+}
+
+void inChanBang(void) {
+    printf("+------------+--------------+-----------------+-----------------+-----------------+\n");
+}
+
 void themTruSac(struct TramSac danhSach[], int *soLuong) {
     if (*soLuong >= MAX_TRU) {
         printf("Danh sach da day (%d tru)!\n", MAX_TRU);
@@ -150,19 +170,76 @@ void hienThiDanhSach(const struct TramSac danhSach[], int soLuong) {
         return;
     }
 
-    printf("\n+------------+--------------+-----------------+-----------------+-----------------+\n");
-    printf("| %-10s | %-12s | %-15s | %-15s | %-15s |\n",
-           "Ma Tru", "Loai Sac", "Thoi Gian (p)", "Dien Nang (kWh)", "Trang Thai");
-    printf("+------------+--------------+-----------------+-----------------+-----------------+\n");
+    inTieuDeBang();
     for (int i = 0; i < soLuong; i++) {
-        printf("| %-10s | %-12s | %-15d | %-15.3f | %-15s |\n",
-               danhSach[i].maTru,
-               danhSach[i].loaiSac,
-               danhSach[i].thoiGianSac,
-               danhSach[i].dienNangDaSac,
-               layTenTrangThai(danhSach[i].trangThai));
+        inDongBang(&danhSach[i]);
     }
-    printf("+------------+--------------+-----------------+-----------------+-----------------+\n");
+    inChanBang();
+}
+
+void timKiemTruSac(const struct TramSac danhSach[], int soLuong) {
+    if (soLuong == 0) {
+        printf("Danh sach tru sac dang trong!\n");
+        return;
+    }
+
+    int kieuTim = 0;
+    printf("\n--- TIM KIEM TRU SAC ---\n");
+    printf("1. Tim theo ma tru (maTru)\n");
+    printf("2. Loc theo loai cong sac (loaiSac)\n");
+    printf("Chon kieu tim kiem (1 - 2): ");
+    if (scanf("%d", &kieuTim) != 1 || (kieuTim != 1 && kieuTim != 2)) {
+        printf("Loi: Lua chon tim kiem khong hop le!\n");
+        xoaBoNhoDem();
+        return;
+    }
+    xoaBoNhoDem();
+
+    char tuKhoa[64];
+    if (kieuTim == 1) {
+        printf("Nhap ma tru can tim (VD: TRU01): ");
+        if (scanf("%63s", tuKhoa) != 1) {
+            xoaBoNhoDem();
+            return;
+        }
+        xoaBoNhoDem();
+
+        int viTri = timViTriTheoMa(danhSach, soLuong, tuKhoa);
+        if (viTri == -1) {
+            printf("Khong tim thay tru sac co ma '%s'!\n", tuKhoa);
+        } else {
+            inTieuDeBang();
+            inDongBang(&danhSach[viTri]);
+            inChanBang();
+        }
+    } else {
+        printf("Nhap loai cong sac can loc (SieuNhanh / SacNhanh / SacThuong): ");
+        if (scanf("%63s", tuKhoa) != 1) {
+            xoaBoNhoDem();
+            return;
+        }
+        xoaBoNhoDem();
+
+        if (!kiemTraLoaiSac(tuKhoa)) {
+            printf("Loi: Loai cong sac khong hop le!\n");
+            return;
+        }
+
+        int dem = 0;
+        for (int i = 0; i < soLuong; i++) {
+            if (strcmp(danhSach[i].loaiSac, tuKhoa) == 0) {
+                if (dem == 0) inTieuDeBang();
+                inDongBang(&danhSach[i]);
+                dem++;
+            }
+        }
+        if (dem > 0) {
+            inChanBang();
+            printf("-> Tim thay %d tru sac thuoc loai '%s'.\n", dem, tuKhoa);
+        } else {
+            printf("Khong co tru sac nao thuoc loai '%s'!\n", tuKhoa);
+        }
+    }
 }
 
 void hienThiMenu(void) {
@@ -202,11 +279,13 @@ int main(void) {
                 hienThiDanhSach(danhSach, soLuong);
                 break;
             case 3:
+                timKiemTruSac(danhSach, soLuong);
+                break;
             case 4:
             case 5:
             case 6:
             case 7:
-                printf("Chuc nang se duoc cap nhat o Tuan 2.\n");
+                printf("Chuc nang dang duoc hoan thien.\n");
                 break;
             case 0:
                 printf("Da thoat chuong trinh.\n");
