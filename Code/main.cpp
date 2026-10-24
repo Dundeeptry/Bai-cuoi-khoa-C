@@ -242,6 +242,94 @@ void timKiemTruSac(const struct TramSac danhSach[], int soLuong) {
     }
 }
 
+void capNhatTruSac(struct TramSac danhSach[], int soLuong) {
+    if (soLuong == 0) {
+        printf("Danh sach tru sac dang trong!\n");
+        return;
+    }
+
+    char maCanSua[64];
+    printf("Nhap ma tru can cap nhat (VD: TRU01): ");
+    if (scanf("%63s", maCanSua) != 1) {
+        xoaBoNhoDem();
+        return;
+    }
+    xoaBoNhoDem();
+
+    int viTri = timViTriTheoMa(danhSach, soLuong, maCanSua);
+    if (viTri == -1) {
+        printf("Khong tim thay tru sac co ma '%s'!\n", maCanSua);
+        return;
+    }
+
+    printf("Thong tin hien tai cua tru '%s':\n", maCanSua);
+    inTieuDeBang();
+    inDongBang(&danhSach[viTri]);
+    inChanBang();
+
+    while (1) {
+        printf("Nhap so phut cam sac moi (>= 0): ");
+        if (scanf("%d", &danhSach[viTri].thoiGianSac) == 1 &&
+            danhSach[viTri].thoiGianSac >= 0) {
+            xoaBoNhoDem();
+            break;
+        }
+        printf("Loi: Vui long nhap so nguyen >= 0!\n");
+        xoaBoNhoDem();
+    }
+
+    while (1) {
+        printf("Nhap dien nang da nap moi (kWh, >= 0): ");
+        if (scanf("%f", &danhSach[viTri].dienNangDaSac) == 1 &&
+            danhSach[viTri].dienNangDaSac >= 0.0f) {
+            xoaBoNhoDem();
+            break;
+        }
+        printf("Loi: Vui long nhap so thuc >= 0!\n");
+        xoaBoNhoDem();
+    }
+
+    while (1) {
+        printf("Nhap trang thai moi (0: Dang trong, 1: Dang sac, 2: Dang bao tri): ");
+        if (scanf("%d", &danhSach[viTri].trangThai) == 1 &&
+            danhSach[viTri].trangThai >= 0 && danhSach[viTri].trangThai <= 2) {
+            xoaBoNhoDem();
+            break;
+        }
+        printf("Loi: Chi nhan gia tri 0, 1 hoac 2!\n");
+        xoaBoNhoDem();
+    }
+
+    printf("-> Da cap nhat thong tin tru '%s' thanh cong!\n", maCanSua);
+}
+
+void xoaTruSac(struct TramSac danhSach[], int *soLuong) {
+    if (*soLuong == 0) {
+        printf("Danh sach tru sac dang trong!\n");
+        return;
+    }
+
+    char maCanXoa[64];
+    printf("Nhap ma tru can xoa (VD: TRU01): ");
+    if (scanf("%63s", maCanXoa) != 1) {
+        xoaBoNhoDem();
+        return;
+    }
+    xoaBoNhoDem();
+
+    int viTri = timViTriTheoMa(danhSach, *soLuong, maCanXoa);
+    if (viTri == -1) {
+        printf("Khong tim thay tru sac co ma '%s'!\n", maCanXoa);
+        return;
+    }
+
+    for (int i = viTri; i < *soLuong - 1; i++) {
+        danhSach[i] = danhSach[i + 1];
+    }
+    (*soLuong)--;
+    printf("-> Da xoa tru '%s' khoi he thong!\n", maCanXoa);
+}
+
 void hienThiMenu(void) {
     printf("\n========== QUAN LY TRAM SAC XE DIEN ==========\n");
     printf("1. Them moi tru sac (Create)\n");
@@ -282,7 +370,11 @@ int main(void) {
                 timKiemTruSac(danhSach, soLuong);
                 break;
             case 4:
+                capNhatTruSac(danhSach, soLuong);
+                break;
             case 5:
+                xoaTruSac(danhSach, &soLuong);
+                break;
             case 6:
             case 7:
                 printf("Chuc nang dang duoc hoan thien.\n");
